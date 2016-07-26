@@ -74,14 +74,12 @@ const showRanks = (bot, message) => {
         for(const key in stored) {
             sortable.push([key, stored[key]]);
         }
-        sortable.sort((a, b) => a[1] - b[1]);
+        sortable.sort((a, b) => b[1] - a[1]);
         for(const entry of sortable) {
-            bot.reply(message, `${entry[0]}: ${entry[1]} rep`);
+            bot.reply(message, `${entry[0]}: ${entry[1]}`);
         }
     });
 };
-
-
 
 module.exports = {
     addRep,

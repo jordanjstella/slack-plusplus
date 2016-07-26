@@ -34,3 +34,4 @@ controller.on('rtm_close', () => {
 
 controller.hears('\\+\\+', 'ambient,direct_message', commands.addRep);
 controller.hears('--', 'ambient,direct_message', commands.subtractRep);
+controller.hears('!rankings', 'ambient,direct_message', commands.showRanks);
