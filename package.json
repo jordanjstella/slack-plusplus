@@ -1,0 +1,16 @@
+{
+  "name": "slack-plusplus",
+  "version": "1.0.0",
+  "description": "slack plusplus bot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinpeck7/slack-plusplus.git"
+  },
+  "author": "Justin Peck",
+  "license": "ISC",
+  "dependencies": {
+    "botkit": "^0.2.2",
+    "jsonfile": "^2.3.1",
+    "request": "^2.74.0"
+  }
+}
