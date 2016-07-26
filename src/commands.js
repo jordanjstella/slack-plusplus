@@ -55,7 +55,7 @@ const updateRep = (message, add, cb) => {
 const addRep = (bot, message) => {
     updateRep(message, true, (err, user, rank) => {
         if (!err) {
-            bot.reply(message, `${user} rep increased to ${rank}`);
+            bot.reply(message, `${user}'s rep increased to ${rank}`);
         }
     });
 };
@@ -63,7 +63,7 @@ const addRep = (bot, message) => {
 const subtractRep = (bot, message) => {
     updateRep(message, false, (err, user, rank) => {
         if (!err) {
-            bot.reply(message, `${user} rep decreased to ${rank}`);
+            bot.reply(message, `${user}'s rep decreased to ${rank}`);
         }
     });
 };
