@@ -29,7 +29,8 @@ const updateRep = (message, add, cb) => {
 
     if (InputParser.isValid(text)) {
         const target = InputParser.getTarget(text[0], users),
-            sameUser = InputParser.getUserId(text[0]) === message.user;
+            sameUser = InputParser.getUserId(text[0]) === message.user
+            || target.toLowerCase() === users[message.user];
 
         getRanks(stored => {
             if (stored[target] === undefined) {
