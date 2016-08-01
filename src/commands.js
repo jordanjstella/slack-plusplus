@@ -14,65 +14,81 @@ request(services.slackUsers(token), (err, response, body) => {
     console.log(`${Object.keys(users).length} Users Found`);
 });
 
-const getRanks = cb => {
-    jsonfile.readFile(storageFile, (err, stored) => {
-        cb(stored);
+const getRanks = () => {
+    return new Promise((resolve, reject) => {
+        jsonfile.readFile(storageFile, (err, stored) => {
+            if (!err) {
+                resolve(stored);
+            }
+            else {
+                reject(err);
+            }
+        });
     });
 }
 
-const updateRanks = (obj, cb) => {
-    jsonfile.writeFile(storageFile, obj, cb);
+const updateRanks = obj => {
+    return new Promise((resolve, reject) => {
+        jsonfile.writeFile(storageFile, obj, err => {
+            if (!err) {
+                resolve();
+            }
+            else {
+                reject(err);
+            }
+        });
+    });
 };
 
-const updateRep = (message, add, cb) => {
+const updateRep = (message, add) => {
     const text = message.text.split(' ');
 
     if (InputParser.isValid(text)) {
         const target = InputParser.getTarget(text[0], users),
             sameUser = InputParser.getUserId(text[0]) === message.user
-            || target.toLowerCase() === users[message.user];
+                || target.toLowerCase() === users[message.user];
 
-        getRanks(stored => {
-            if (stored[target] === undefined) {
-                stored[target] = 0;
-            }
-            if (add && !sameUser) {
-                stored[target] = stored[target] + 1;
-            }
-            else {
-                stored[target] = stored[target] - 1;
-            }
-            updateRanks(stored, err => {
-                cb(err, target, stored[target], sameUser);
+        return new Promise((resolve, reject) => {
+            getRanks().then(stored => {
+                if (stored[target] === undefined) {
+                    stored[target] = 0;
+                }
+                if (add && !sameUser) {
+                    stored[target] = stored[target] + 1;
+                }
+                else {
+                    stored[target] = stored[target] - 1;
+                }
+                updateRanks(stored).then(() => {
+                    resolve({ user: target, rank: stored[target], sameUser: sameUser });
+                }).catch(err => {
+                    reject(err);
+                });
             });
         });
     }
 };
 
 const addRep = (bot, message) => {
-    updateRep(message, true, (err, user, rank, sameUser) => {
-        if (!err) {
-            if (sameUser) {
-                bot.reply(message, `${user}'s rep decreased to ${rank}`);
-            }
-            else {
-                bot.reply(message, `${user}'s rep increased to ${rank}`);
-            }
+    updateRep(message, true).then(updated => {
+        if (updated.sameUser) {
+            bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
+        }
+        else {
+            bot.reply(message, `${updated.user}'s rep increased to ${updated.rank}`);
         }
     });
 };
 
 const subtractRep = (bot, message) => {
-    updateRep(message, false, (err, user, rank) => {
-        if (!err) {
-            bot.reply(message, `${user}'s rep decreased to ${rank}`);
-        }
+    updateRep(message, false).then(updated => {
+        bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
     });
 };
 
 const showRanks = (bot, message) => {
     const sortable = [];
-    getRanks(stored => {
+    getRanks().then(stored => {
         for (const key in stored) {
             sortable.push([key, stored[key]]);
         }
