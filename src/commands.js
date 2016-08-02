@@ -43,47 +43,51 @@ const updateRanks = obj => {
 const updateRep = (message, add) => {
     const text = message.text.split(' ');
 
-    if (InputParser.isValid(text)) {
-        const target = InputParser.getTarget(text[0], users),
-            sameUser = InputParser.getUserId(text[0]) === message.user
-                || target.toLowerCase() === users[message.user];
+    const target = InputParser.getTarget(text[0], users),
+        sameUser = InputParser.getUserId(text[0]) === message.user
+            || target.toLowerCase() === users[message.user];
 
-        return new Promise((resolve, reject) => {
-            getRanks().then(stored => {
-                if (stored[target] === undefined) {
-                    stored[target] = 0;
-                }
-                if (add && !sameUser) {
-                    stored[target] = stored[target] + 1;
-                }
-                else {
-                    stored[target] = stored[target] - 1;
-                }
-                updateRanks(stored).then(() => {
-                    resolve({ user: target, rank: stored[target], sameUser: sameUser });
-                }).catch(err => {
-                    reject(err);
-                });
+    return new Promise((resolve, reject) => {
+        getRanks().then(stored => {
+            if (stored[target] === undefined) {
+                stored[target] = 0;
+            }
+            if (add && !sameUser) {
+                stored[target] = stored[target] + 1;
+            }
+            else {
+                stored[target] = stored[target] - 1;
+            }
+            updateRanks(stored).then(() => {
+                resolve({ user: target, rank: stored[target], sameUser: sameUser });
+            }).catch(err => {
+                reject(err);
             });
+        }).catch(err => {
+            reject(err)
+        });
+    });
+};
+
+const addRep = (bot, message) => {
+    if (InputParser.isValid(message.text.split(' '))) {
+        updateRep(message, true).then(updated => {
+            if (updated.sameUser) {
+                bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
+            }
+            else {
+                bot.reply(message, `${updated.user}'s rep increased to ${updated.rank}`);
+            }
         });
     }
 };
 
-const addRep = (bot, message) => {
-    updateRep(message, true).then(updated => {
-        if (updated.sameUser) {
-            bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
-        }
-        else {
-            bot.reply(message, `${updated.user}'s rep increased to ${updated.rank}`);
-        }
-    });
-};
-
 const subtractRep = (bot, message) => {
-    updateRep(message, false).then(updated => {
-        bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
-    });
+    if (InputParser.isValid(message.text.split(' '))) {
+        updateRep(message, false).then(updated => {
+            bot.reply(message, `${updated.user}'s rep decreased to ${updated.rank}`);
+        });
+    }
 };
 
 const showRanks = (bot, message) => {
